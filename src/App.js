@@ -1,22 +1,16 @@
-import React, { useState, useEffect } from "react";
-import { decode, encode } from "base-64";
-
-if (!global.btoa) {
-  global.btoa = encode;
-}
-
-if (!global.atob) {
-  global.atob = decode;
-}
+import React, { useState } from "react";
 
 var apiUrl = "https://emoticonList.dheerajr11.repl.co/getgroup/groupName.json";
 var apiEmojiUrl =
   "https://emoticonList.dheerajr11.repl.co/getEmoji/emoji.json?text=";
+var apiEmojiMeaningUrl =
+  "https://emoticonList.dheerajr11.repl.co/getEmojiName/emojiName.json?text=";
 
 export default function App() {
   const [items, setItems] = React.useState([]);
   const [emojiList, GetItems] = React.useState([]);
-  const [meaning, setMeaning] = useState("");
+  const [emoji, setEmoji1] = useState("");
+  const [meaning1, setMeaning1] = useState("Meaning will appear here..");
 
   React.useEffect(() => {
     async function fetchData() {
@@ -30,22 +24,33 @@ export default function App() {
   }, []);
 
   async function emojiGroupClickHandler(emojiGroup) {
-    document.getElementById("notify-2").checked = true;
     var data = await fetch(apiEmojiUrl + emojiGroup).then((res) => {
       return res.json();
     });
     GetItems(data.contents.emojis);
   }
 
-  function getEmojiName(selectedEmoji) {
-    console.log("inside:", selectedEmoji);
-    var userInput = selectedEmoji;
-    console.log("23t1", { emojiList });
+  async function getInputEmojiMeaning(emojiUserInput) {
+    console.log(apiEmojiMeaningUrl + emojiUserInput);
+    var data = await fetch(apiEmojiMeaningUrl + emojiUserInput).then((res) => {
+      return res.json();
+    });
+    console.log(data);
+    setMeaning1(data.contents.emojiName);
+  }
 
+  function getEmojiMeaning(event) {
+    const inputEmoji = event.target.value;
+    setEmoji1(inputEmoji);
+    getInputEmojiMeaning(inputEmoji);
+  }
+
+  function getEmojiName(selectedEmoji) {
+    document.getElementById("inputTextBox").value = selectedEmoji;
+    console.log();
+    var userInput = selectedEmoji;
     var meaning = "";
     for (var i = 0; i < emojiList.length; i++) {
-      console.log("zxc:", emojiList[i]);
-      console.log("init:", emojiList[i].emoji);
       if (emojiList[i].emoji === userInput) {
         meaning = emojiList[i].name;
         break;
@@ -53,46 +58,64 @@ export default function App() {
         meaning = "we don't how it got there :(";
       }
     }
-
     console.log("meaning", { meaning });
     if (meaning === undefined) {
       meaning = "we don't have this in our database";
     }
-    setMeaning(meaning); // react call to show output
+    setMeaning1(meaning); // react call to show output
   }
-  //  console.log("1:", { items });
-  console.log("12:", { emojiList });
 
   return (
     <div className="App">
       <h1>Emoji Dictionary</h1>
 
-      <label for="notify-2">
-        <input id="notify-2" type="checkbox" />
-        <i className="fa fa-long-arrow-down"></i>
-        <div id="notification-bar">
-          <div className="container">
-            {items.map(function (emojiTaken1) {
-              return (
-                <p
-                  onClick={() => emojiGroupClickHandler(emojiTaken1)}
-                  key={emojiTaken1}
-                >
-                  <a className="btn-action" href="#">
-                    {emojiTaken1}
-                  </a>
-                </p>
-              );
-            })}
-          </div>
-        </div>
-      </label>
-      <div>{meaning}</div>
+      <div className="span">
+        {items.map(function (emojiTaken1) {
+          return (
+            <span
+              className="genre"
+              onClick={() => emojiGroupClickHandler(emojiTaken1)}
+              key={emojiTaken1}
+            >
+              <a className="btn-action" href="#">
+                {emojiTaken1}
+              </a>
+            </span>
+          );
+        })}
+      </div>
+      <div
+        style={{
+          padding: "1em",
+          minWidth: "80%",
+          display: "flex",
+          justifyContent: "center"
+        }}
+      >
+        <input
+          onChange={getEmojiMeaning}
+          minLength="0"
+          maxLength="2"
+          size="2"
+          pattern="[^a-zA-Z0-9]"
+          placeholder={"Emoji..."}
+          id="inputTextBox"
+          style={{
+            textAlign: "center"
+          }}
+        />
+        <div className="meaningDisp">{meaning1}</div>
+      </div>
+
       <div id="dispTable" className="wrapper">
         {emojiList.map(function (emojiDB) {
           emojiDB = emojiDB.emoji;
           return (
-            <span onClick={() => getEmojiName(emojiDB)} key={emojiDB}>
+            <span
+              onClick={() => getEmojiName(emojiDB)}
+              key={emojiDB}
+              className="emojiSpan"
+            >
               <a className="btn-action" href="#">
                 {emojiDB}
               </a>
