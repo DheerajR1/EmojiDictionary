@@ -12,12 +12,33 @@ export default function App() {
   const [emoji, setEmoji1] = useState("");
   const [meaning1, setMeaning1] = useState("Meaning will appear here..");
 
+  const getDeviceType = () => {
+    const ua = navigator.userAgent;
+    if (/(tablet|ipad|playbook|silk)|(android(?!.*mobi))/i.test(ua)) {
+      return "tablet";
+    }
+    if (
+      /Mobile|iP(hone|od)|Android|BlackBerry|IEMobile|Kindle|Silk-Accelerated|(hpw|web)OS|Opera M(obi|ini)/.test(
+        ua
+      )
+    ) {
+      console.log("mobile")
+      return "mobile";
+    }
+    console.log("PC");
+    return "desktop";
+  };
+
   React.useEffect(() => {
     async function fetchData() {
       var data = await fetch(apiUrl).then((res) => {
         return res.json();
       });
       console.log(data.contents.text);
+      if (getDeviceType() === "desktop") {
+        var testStr = data.contents.text;
+        testStr.pop();
+      }
       setItems(data.contents.text);
     }
     fetchData();
@@ -31,11 +52,9 @@ export default function App() {
   }
 
   async function getInputEmojiMeaning(emojiUserInput) {
-    console.log(apiEmojiMeaningUrl + emojiUserInput);
     var data = await fetch(apiEmojiMeaningUrl + emojiUserInput).then((res) => {
       return res.json();
     });
-    console.log(data);
     setMeaning1(data.contents.emojiName);
   }
 
@@ -58,7 +77,6 @@ export default function App() {
         meaning = "we don't how it got there :(";
       }
     }
-    console.log("meaning", { meaning });
     if (meaning === undefined) {
       meaning = "we don't have this in our database";
     }
